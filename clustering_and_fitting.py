@@ -125,31 +125,23 @@ def perform_clustering(df, col1, col2):
         return
 
     def one_silhouette_inertia():
-        kmeans = KMeans(n_clusters=3, random_state=42)
+       kmeans = KMeans(n_clusters=3, random_state=42)
         labels = kmeans.fit_predict(X)
         _score = silhouette_score(X, labels)
         _inertia = kmeans.inertia_
-        return _score, _inertia ,labels, kmeans
+        return labels, _score, _inertia, kmeans
 
-    # Gather data and scale
-    data = df[[col1, col2]].dropna()
-    scaler = StandardScaler()
-    X = scaler.fit_transform(data)
-    
-
-    # Find best number of clusters
-    one_silhouette_inertia()
     plot_elbow_method()
     labels, _score, _inertia, model = one_silhouette_inertia()
 
-    # Get cluster centers
-     # Cluster centers
+    print(f"\nClustering Results: Silhouette = {_score:.3f}, Inertia = {_inertia:.2f}")
+
+    # Cluster centers
     centers = model.cluster_centers_
     xkmeans, ykmeans = centers[:, 0], centers[:, 1]
     cenlabels = [f"Cluster {i}" for i in range(len(centers))]
-    
-    return labels, data, xkmeans, ykmeans, cenlabels
 
+    return labels, data, xkmeans, ykmeans, cenlabels
 
 def plot_clustered_data(labels, data, xkmeans, ykmeans, centre_labels):
     fig, ax = plt.subplots(figsize=(8, 6))
