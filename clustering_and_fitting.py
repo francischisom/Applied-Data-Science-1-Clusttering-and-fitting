@@ -15,6 +15,11 @@ import pandas as pd
 import scipy.stats as ss
 import seaborn as sns
 
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+from sklearn.linear_model import LinearRegression
+
 
 def plot_relational_plot(df):
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -31,7 +36,6 @@ def plot_categorical_plot(df):
     ax.set_title("Categorical Plot: Distribution of Body Mass")
     plt.savefig("categorical_plot.png")
     return
-    
 
 
 def plot_statistical_plot(df):
@@ -43,27 +47,22 @@ def plot_statistical_plot(df):
 
 
 def statistical_analysis(df, col: str):
- #
     data = df[col].dropna()
     mean = np.mean(data)
     stddev = np.std(data, ddof=1)
     skew = ss.skew(data)
     excess_kurtosis = ss.kurtosis(data)
-    return mean, stddev, skew, excess_kurtosis 
+    return mean, stddev, skew, excess_kurtosis
 
 
-   
 def preprocessing(df):
-    # You should preprocess your data in this function and
-    # make use of quick features such as 'describe', 'head/tail' and 'corr'.
     print("\nBasic Info:")
     print(df.info())
     print("\nSummary Statistics:")
     print(df.describe())
-    print("\nCorrelation :")
+    print("\nCorrelation:")
     print(df.corr(numeric_only=True))
 
-    # Drop missing rows
     df = df.dropna()
     return df
 
@@ -74,9 +73,7 @@ def writing(moments, col):
           f'Standard Deviation = {moments[1]:.2f}, '
           f'Skewness = {moments[2]:.2f}, and '
           f'Excess Kurtosis = {moments[3]:.2f}.')
-   
-    # Delete the following options as appropriate for your data.
-    # Not skewed and mesokurtic can be defined with asymmetries <-2 or >2.
+
     if moments[2] > 0:
         skew_type = "right-skewed"
     elif moments[2] < 0:
@@ -90,37 +87,35 @@ def writing(moments, col):
         kurt_type = "platykurtic"
     else:
         kurt_type = "mesokurtic"
+
     print(f"The data is {skew_type} and {kurt_type}.")
     return
 
 
 def perform_clustering(df, col1, col2):
- # Gather Datas
-    data = df[[col1, co12]].dropna()
+    data = df[[col1, col2]].dropna()
 
-# Scale
     scaler = StandardScaler()
     X = scaler.fit_transform(data)
-    
+
     def plot_elbow_method():
-     inertias = []
+        inertias = []
         K = range(2, 8)
         for k in K:
             km = KMeans(n_clusters=k, random_state=42)
             km.fit(X)
             inertias.append(km.inertia_)
         fig, ax = plt.subplots()
-        ax.plot(ks, interias, marker='o')
-        ax.set_title("Elbow Plot for  k")
-        ax.set_xlabel("Number of clusters")
+        ax.plot(K, inertias, marker='o')
+        ax.set_title("Elbow Plot")
+        ax.set_xlabel("k")
         ax.set_ylabel("Inertia")
-        plt.tight_layout()
         plt.savefig("elbow_plot.png")
         return
 
     def one_silhouette_inertia():
         model = KMeans(n_clusters=3, random_state=42)
-        labels = kmeans.fit_predict(X)
+        labels = model.fit_predict(X)
         _score = silhouette_score(X, labels)
         _inertia = model.inertia_
         return labels, _score, _inertia, model
@@ -130,21 +125,22 @@ def perform_clustering(df, col1, col2):
 
     print(f"\nClustering Results: Silhouette = {_score:.3f}, Inertia = {_inertia:.2f}")
 
-    # Cluster centers
     centers = model.cluster_centers_
     xmodel, ymodel = centers[:, 0], centers[:, 1]
     cenlabels = [f"Cluster {i}" for i in range(len(centers))]
 
-    return labels, data, xkmeans, ykmeans, cenlabels
+    return labels, data, xmodel, ymodel, cenlabels
+
 
 def plot_clustered_data(labels, data, xkmeans, ykmeans, centre_labels):
     fig, ax = plt.subplots()
     sns.scatterplot(x=data.iloc[:, 0], y=data.iloc[:, 1],
                     hue=labels, palette="tab10", ax=ax)
-    ax.scatter(xmodel, ymodel, color="black", s=150, marker="X")
+
+    ax.scatter(xkmeans, ykmeans, color="black", s=150, marker="X")
 
     for i, label in enumerate(centre_labels):
-        ax.text(xmodel[i], ymodel[i], label,
+        ax.text(xkmeans[i], ykmeans[i], label,
                 fontsize=10, weight="bold", color="black")
 
     ax.set_title('Cluster Plot')
@@ -153,34 +149,34 @@ def plot_clustered_data(labels, data, xkmeans, ykmeans, centre_labels):
 
 
 def perform_fitting(df, col1, col2):
-    # Gather data and prepare for fitting
-    fig, ax = plt.subplots(figsize=(8, 6))
-    # Fit model
     data = df[[col1, col2]].dropna()
+
     X = data[[col1]]
     y = data[col2]
+
     model = LinearRegression()
     model.fit(X, y)
 
-    # Predict across x
     x_pred = pd.DataFrame(np.linspace(X.min(), X.max(), 100), columns=[col1])
     y_pred = model.predict(x_pred)
     
+
     print(f"\nFitting Results: y = {model.coef_[0]:.3f}x + {model.intercept_:.3f}")
-    
-    return data, x, y
+
+    return data, x_pred, y_pred
 
 
 def plot_fitted_data(data, x, y):
     fig, ax = plt.subplots()
-    ax.scatter(data.iloc[:, 0], data.iloc[:, 1], color="gray", alpha=0.6, label="Data")
+    ax.scatter(data.iloc[:, 0], data.iloc[:, 1],
+               color="gray", alpha=0.6, label="Data")
 
     ax.plot(x, y, color="red", linewidth=2, label="Fitted Line")
     ax.set_title("Fitting: Linear Regression")
     ax.set_xlabel(data.columns[0])
     ax.set_ylabel(data.columns[1])
     ax.legend()
-    plt.tight_layout()
+
     plt.savefig('fitting.png')
     return
 
@@ -188,14 +184,18 @@ def plot_fitted_data(data, x, y):
 def main():
     df = pd.read_csv('data.csv')
     df = preprocessing(df)
+
     col = 'body_mass_g'
     plot_relational_plot(df)
     plot_statistical_plot(df)
     plot_categorical_plot(df)
+
     moments = statistical_analysis(df, col)
     writing(moments, col)
+
     clustering_results = perform_clustering(df, 'flipper_length_mm', 'body_mass_g')
     plot_clustered_data(*clustering_results)
+
     fitting_results = perform_fitting(df, 'flipper_length_mm', 'body_mass_g')
     plot_fitted_data(*fitting_results)
     return
