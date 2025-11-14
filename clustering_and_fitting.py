@@ -22,7 +22,8 @@ from sklearn.linear_model import LinearRegression
 
 
 def plot_relational_plot(df):
-    fig, ax = plt.subplots(figsize=()
+ # Create a Scatter plot showing flipper length vs Bill length
+    fig, ax = plt.subplots()
     sns.scatterplot(data=df, x="bill_length_mm", y="flipper_length_mm",
                     hue="species", ax=ax)
     ax.set_title("Relational Plot: Bill Length vs Flipper Length")
@@ -31,6 +32,9 @@ def plot_relational_plot(df):
 
 
 def plot_categorical_plot(df):
+ 
+  # Plot and save a histogram of body mass with a KDE curve.
+    
     fig, ax = plt.subplots()
     sns.histplot(df["body_mass_g"].dropna(), kde=True, ax=ax)
     ax.set_title("Categorical Plot: Distribution of Body Mass")
@@ -39,6 +43,9 @@ def plot_categorical_plot(df):
 
 
 def plot_statistical_plot(df):
+ 
+  # Generate and save a correlation heatmap of all numeric variables.
+    
     fig, ax = plt.subplots(figsize=()
     sns.heatmap(df.corr(numeric_only=True), annot=True, cmap="coolwarm", ax=ax)
     ax.set_title("Statistical Plot: Correlation Heatmap")
@@ -47,6 +54,7 @@ def plot_statistical_plot(df):
 
 
 def statistical_analysis(df, col: str):
+ #  Calculate and return the mean, standard deviation, skewness,and excess kurtosis of a selected column.
     data = df[col].dropna()
     mean = np.mean(data)
     stddev = np.std(data, ddof=1)
@@ -56,6 +64,8 @@ def statistical_analysis(df, col: str):
 
 
 def preprocessing(df):
+  # Display basic info, summary statistics, correlations,and return the dataframe with missing rows removed.
+  # You should preprocess your data in this function and make use of quick features such as 'describe', 'head/tail' and 'corr'.
     print("\nBasic Info:")
     print(df.info())
     print("\nSummary Statistics:")
@@ -68,11 +78,13 @@ def preprocessing(df):
 
 
 def writing(moments, col):
+# Print a summary of statistical moments and their interpretation (skewness and kurtosis type).
     print(f'For the attribute {col}:')
     print(f'Mean = {moments[0]:.2f}, '
           f'Standard Deviation = {moments[1]:.2f}, '
           f'Skewness = {moments[2]:.2f}, and '
           f'Excess Kurtosis = {moments[3]:.2f}.')
+# Delete the following options as appropriate for your data. Not skewed and mesokurtic can be defined with asymmetries <-2 or >2.
 
     if moments[2] > 0:
         skew_type = "right-skewed"
@@ -93,12 +105,15 @@ def writing(moments, col):
 
 
 def perform_clustering(df, col1, col2):
+ # Perform KMeans clustering on two selected columns.Generates an elbow plot and returns cluster labels,
+ # original data, cluster centre coordinates, and labels.
     data = df[[col1, col2]].dropna()
 
     scaler = StandardScaler()
     X = scaler.fit_transform(data)
 
     def plot_elbow_method():
+    # Plot and save elbow curve for k from 2 to 7
         inertias = []
         K = range(2, 8)
         for k in K:
@@ -114,17 +129,19 @@ def perform_clustering(df, col1, col2):
         return
 
     def one_silhouette_inertia():
+     # Fit KMeans with k=3 and return clustering metrics
         model = KMeans(n_clusters=3, random_state=42)
         labels = model.fit_predict(X)
         _score = silhouette_score(X, labels)
         _inertia = model.inertia_
         return labels, _score, _inertia, model
-
+  
+ # Find best number of clusters
     plot_elbow_method()
     labels, _score, _inertia, model = one_silhouette_inertia()
 
     print(f"\nClustering Results: Silhouette = {_score:.3f}, Inertia = {_inertia:.2f}")
-
+  # Get clusters centers
     centers = model.cluster_centers_
     xmodel, ymodel = centers[:, 0], centers[:, 1]
     cenlabels = [f"Cluster {i}" for i in range(len(centers))]
@@ -133,6 +150,9 @@ def perform_clustering(df, col1, col2):
 
 
 def plot_clustered_data(labels, data, xkmeans, ykmeans, centre_labels):
+ 
+ # Plot and save clustered scatter plot with cluster centres labelled.
+
     fig, ax = plt.subplots()
     sns.scatterplot(x=data.iloc[:, 0], y=data.iloc[:, 1],
                     hue=labels, palette="tab10", ax=ax)
@@ -149,8 +169,8 @@ def plot_clustered_data(labels, data, xkmeans, ykmeans, centre_labels):
 
 
 def perform_fitting(df, col1, col2):
+ # Fit a simple linear regression model using one feature and one target. Returns the data, predicted x-values, and predicted y-values.
     data = df[[col1, col2]].dropna()
-
     X = data[[col1]]
     y = data[col2]
 
@@ -167,6 +187,7 @@ def perform_fitting(df, col1, col2):
 
 
 def plot_fitted_data(data, x, y):
+ # Plot and save scatterplot with fitted linear regression line.
     fig, ax = plt.subplots()
     ax.scatter(data.iloc[:, 0], data.iloc[:, 1],
                color="gray", alpha=0.6, label="Data")
@@ -182,14 +203,15 @@ def plot_fitted_data(data, x, y):
 
 
 def main():
+# Main execution function: loads data, preprocesses it,generates plots, performs clustering and fitting.
     df = pd.read_csv('data.csv')
     df = preprocessing(df)
-
     col = 'body_mass_g'
     plot_relational_plot(df)
     plot_statistical_plot(df)
     plot_categorical_plot(df)
 
+    
     moments = statistical_analysis(df, col)
     writing(moments, col)
 
