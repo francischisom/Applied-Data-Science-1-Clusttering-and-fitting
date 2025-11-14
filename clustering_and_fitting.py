@@ -46,7 +46,7 @@ def plot_statistical_plot(df):
  
   # Generate and save a correlation heatmap of all numeric variables.
     
-    fig, ax = plt.subplots(figsize=()
+    fig, ax = plt.subplots()
     sns.heatmap(df.corr(numeric_only=True), annot=True, cmap="coolwarm", ax=ax)
     ax.set_title("Statistical Plot: Correlation Heatmap")
     plt.savefig('statistical_plot.png')
