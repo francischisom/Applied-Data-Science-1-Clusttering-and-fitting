@@ -77,7 +77,7 @@ def writing(moments, col):
    
     # Delete the following options as appropriate for your data.
     # Not skewed and mesokurtic can be defined with asymmetries <-2 or >2.
-     if moments[2] > 0:
+    if moments[2] > 0:
         skew_type = "right-skewed"
     elif moments[2] < 0:
         skew_type = "left-skewed"
