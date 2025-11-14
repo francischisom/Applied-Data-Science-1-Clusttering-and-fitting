@@ -22,7 +22,7 @@ from sklearn.linear_model import LinearRegression
 
 
 def plot_relational_plot(df):
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=()
     sns.scatterplot(data=df, x="bill_length_mm", y="flipper_length_mm",
                     hue="species", ax=ax)
     ax.set_title("Relational Plot: Bill Length vs Flipper Length")
@@ -39,7 +39,7 @@ def plot_categorical_plot(df):
 
 
 def plot_statistical_plot(df):
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=()
     sns.heatmap(df.corr(numeric_only=True), annot=True, cmap="coolwarm", ax=ax)
     ax.set_title("Statistical Plot: Correlation Heatmap")
     plt.savefig('statistical_plot.png')
